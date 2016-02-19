@@ -13,6 +13,7 @@ var app = express();
 var cookieParser = require('cookie-parser');
 var session = require('cookie-session');
 var user = {name:"john",pass:"1234"};
+var _ = require('lodash');
 // all environments
 app.set('port', process.env.PORT || 3001);
 app.set('views', path.join(__dirname, 'views'));
@@ -64,13 +65,28 @@ passport.use(new LocalStrategy(
     });
   }
 ));
-
-
+ var callbackUrl;
 
 app.get('/auth', function(req, res, next) {
-  res.sendfile('views/login.html');
+    callbackUrl = req.query.continue;
+    if(!req.user){
+        res.sendfile('views/login.html');
+    }
+   else if(!_.isUndefined(callbackUrl)){
+    res.redirect(callbackUrl+'/dashboard?user='+req.user.username);
+    
+    }
+    else{
+        res.sendfile('views/account.html');
+    }
 });
 
+app.get('/logOut' , function(req, res, next){
+    callbackUrl = req.query.continue;
+    req.logout();
+    res.redirect('/auth?continue='+callbackUrl);
+     
+}); 
 
 app.get('/loginFailure' , function(req, res, next){
 	res.send('Failure to authenticate');
@@ -78,7 +94,16 @@ app.get('/loginFailure' , function(req, res, next){
 
 app.get('/loginSuccess' , function(req, res, next){
     var name = req.user.username;
-	res.send('Welcome '+name);
+    
+    console.log(name);
+    if(!_.isUndefined(callbackUrl)){
+    res.redirect(callbackUrl+'/dashboard?user='+name);
+    
+    }
+    else{
+        res.sendfile('views/account.html');
+    }
+	//res.send('Welcome '+name);
 });
 
 app.post('/login',
