@@ -1,7 +1,3 @@
-/**
- * Module dependencies.
- */
-
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
@@ -93,18 +89,23 @@ app.get('/loginFailure' , function(req, res, next){
 });
 
 app.get('/loginSuccess' , function(req, res, next){
-    var name = req.user.username;
-    
-    console.log(name);
-    if(!_.isUndefined(callbackUrl)){
-    res.redirect(callbackUrl+'/dashboard?user='+name);
-    
+    if (req.user) {
+       res.sendfile('views/account.html');
+    } else {
+        res.sendfile('views/logout.html');
     }
-    else{
-        res.sendfile('views/account.html');
-    }
-	//res.send('Welcome '+name);
+    // callbackUrl = req.query.continue;
+    // var name = req.user.username;
+      // res.redirect('/dashboard?user='+name);
+    // }
+    // else{
+        
+  
 });
+app.get('/' , function(req, res, next){
+ res.sendfile('views/landingpage.html');
+});
+
 
 app.post('/login',
   passport.authenticate('local', {
@@ -115,4 +116,3 @@ app.post('/login',
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
